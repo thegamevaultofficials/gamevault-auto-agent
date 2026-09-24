@@ -1,4 +1,4 @@
-import subprocess
+import subprocess, requests, urllib.parse, os
 from voice import make_voiceover
 from PIL import Image, ImageDraw, ImageFont
 
@@ -14,49 +14,42 @@ def make_script():
 आज फ्री फायर भारत का नंबर वन बैटल रॉयल गेम है। हर दिन लाखों लोग इसे खेलते हैं। नारनौल, हिसार, जयपुर जैसे छोटे शहरों में भी इसके टूर्नामेंट होते हैं।
 तो दोस्तों ये थी फ्री फायर की पूरी कहानी। गेमवॉल्ट चैनल को सब्सक्राइब करना मत भूलना। जय हिंद जय भारत।""".strip()
 
-def create_gaming_visuals():
-    scenes = [
-        ("2017 - 500MB KA JADU", "500MB vs 2GB PUBG", (10,30,120)),
-        ("AJJU BHAI - TOTAL GAMING", "1M Downloads in 1 Night", (90,10,90)),
-        ("DJ ALOK - FAV CHARACTER", "Music Heals HP", (130,70,0)),
-        ("TOURNAMENT - 50 LAKH", "Esports Career Start", (0,90,90)),
-        ("FREE FIRE INDIA IS BACK", "1 Crore Comeback", (0,110,20)),
+def download_real_freefire_images():
+    prompts = [
+        "Free Fire Bermuda map parachute landing battle royale, mobile gaming 500MB lightweight, vibrant comic style",
+        "Indian gamer youtuber Total Gaming Ajju Bhai style, gaming room headphones, streaming Free Fire",
+        "DJ Alok Free Fire character healing music aura, concert, game character",
+        "Free Fire esports tournament India trophy 50 lakh prize, stadium crowd cheering",
+        "Free Fire India comeback celebration Indian flag, 1 crore downloads, happy gamers"
     ]
-    try:
-        f_big = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 68)
-        f_mid = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 38)
-    except:
-        f_big = ImageFont.load_default()
-        f_mid = ImageFont.load_default()
-
-    for i, (title, sub, base) in enumerate(scenes):
-        # Create gradient background - no white lines
-        img = Image.new('RGB', (1280, 720), base)
-        draw = ImageDraw.Draw(img)
-        # Add darker gradient top to bottom
-        for y in range(720):
-            r = int(base[0] + y*0.2)
-            g = int(base[1] + y*0.1)
-            b = int(base[2] + y*0.3)
-            draw.line([(0,y),(1280,y)], fill=(min(r,255), min(g,255), min(b,255)))
-        # Add gaming controller circle and phone shape
-        draw.rounded_rectangle([950, 150, 1200, 550], radius=30, outline=(255,255,0), width=6)
-        draw.ellipse([1000, 200, 1150, 350], outline=(0,255,255), width=4)
-        # Big Yellow Title with black stroke
-        draw.text((50, 200), title, fill=(255, 235, 0), font=f_big, stroke_width=5, stroke_fill=(0,0,0))
-        draw.text((55, 310), sub, fill=(255,255,255), font=f_mid, stroke_width=4, stroke_fill=(0,0,0))
-        draw.text((50, 650), f"GameVault | Free Fire Story | Scene {i+1}/5", fill=(0,255,255), font=f_mid)
-        img.save(f"scene_{i}.jpg", quality=95)
-        print(f"Created {title}")
+    for i, p in enumerate(prompts):
+        encoded = urllib.parse.quote(p)
+        url = f"https://image.pollinations.ai/prompt/{encoded}?width=1280&height=720&nologo=true&model=flux&seed={i+100}"
+        print(f"Downloading REAL visual {i+1}: {p[:30]}...")
+        try:
+            r = requests.get(url, timeout=60)
+            open(f"scene_{i}.jpg","wb").write(r.content)
+            # Add big text overlay on REAL image
+            img = Image.open(f"scene_{i}.jpg").convert("RGB")
+            draw = ImageDraw.Draw(img)
+            try:
+                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 58)
+            except:
+                font = ImageFont.load_default()
+            titles = ["500MB KA JADU - 2017","AJJU BHAI - TOTAL GAMING","DJ ALOK - FAV CHARACTER","TOURNAMENT 50 LAKH","FREE FIRE INDIA IS BACK"]
+            draw.text((40, 580), titles[i], fill=(255,255,0), font=font, stroke_width=4, stroke_fill=(0,0,0))
+            img.save(f"scene_{i}.jpg", quality=90)
+        except Exception as e:
+            print(f"Failed {i}: {e}, using backup")
+            # fallback colored if fails
+            Image.new('RGB',(1280,720),(20,40,120)).save(f"scene_{i}.jpg")
 
 def make_video():
-    # Fixed zoom - NO black bar, smooth Ken Burns
-    cmd = """ffmpeg -y -loop 1 -t 8 -i scene_0.jpg -loop 1 -t 8 -i scene_1.jpg -loop 1 -t 8 -i scene_2.jpg -loop 1 -t 8 -i scene_3.jpg -loop 1 -t 8 -i scene_4.jpg -i gamevault_final.mp3 -filter_complex "[0:v]scale=1280:720,zoompan=z='min(zoom+0.0012,1.3)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v0]; [1:v]scale=1280:720,zoompan=z='min(zoom+0.0012,1.3)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v1]; [2:v]scale=1280:720,zoompan=z='min(zoom+0.0012,1.3)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v2]; [3:v]scale=1280:720,zoompan=z='min(zoom+0.0012,1.3)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v3]; [4:v]scale=1280:720,zoompan=z='min(zoom+0.0012,1.3)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v4]; [v0][v1][v2][v3][v4]concat=n=5:v=1:a=0[v]" -map "[v]" -map 5:a -c:v libx264 -c:a aac -pix_fmt yuv420p -shortest -r 30 final_video.mp4"""
+    cmd = """ffmpeg -y -loop 1 -t 8 -i scene_0.jpg -loop 1 -t 8 -i scene_1.jpg -loop 1 -t 8 -i scene_2.jpg -loop 1 -t 8 -i scene_3.jpg -loop 1 -t 8 -i scene_4.jpg -i gamevault_final.mp3 -filter_complex "[0:v]scale=1280:720,zoompan=z='min(zoom+0.0015,1.35)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v0]; [1:v]scale=1280:720,zoompan=z='min(zoom+0.0015,1.35)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v1]; [2:v]scale=1280:720,zoompan=z='min(zoom+0.0015,1.35)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v2]; [3:v]scale=1280:720,zoompan=z='min(zoom+0.0015,1.35)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v3]; [4:v]scale=1280:720,zoompan=z='min(zoom+0.0015,1.35)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1280x720:fps=30[v4]; [v0][v1][v2][v3][v4]concat=n=5:v=1:a=0[v]" -map "[v]" -map 5:a -c:v libx264 -c:a aac -pix_fmt yuv420p -shortest -r 30 final_video.mp4"""
     subprocess.run(cmd, shell=True, executable='/bin/bash')
-    print("V6 READY - No black bar!")
+    print("V7 REAL VISUALS VIDEO READY!")
 
 if __name__ == "__main__":
-    s = make_script()
-    make_voiceover(s)
-    create_gaming_visuals()
+    make_voiceover(make_script())
+    download_real_freefire_images()
     make_video()
