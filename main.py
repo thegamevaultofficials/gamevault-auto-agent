@@ -1,6 +1,6 @@
-import os, subprocess
+import os, subprocess, requests
 from voice import make_voiceover
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 def make_final_script():
     return """दोस्तों गेमवॉल्ट पर आपका स्वागत है। आज की इस धमाकेदार वीडियो में हम बात करने वाले हैं फ्री फायर की पूरी सच्ची कहानी के बारे में।
@@ -14,43 +14,29 @@ def make_final_script():
 आज फ्री फायर भारत का नंबर वन बैटल रॉयल गेम है। हर दिन लाखों लोग इसे खेलते हैं। नारनौल, हिसार, जयपुर जैसे छोटे शहरों में भी इसके टूर्नामेंट होते हैं।
 तो दोस्तों ये थी फ्री फायर की पूरी कहानी। गेमवॉल्ट चैनल को सब्सक्राइब करना मत भूलना। जय हिंद जय भारत।""".strip()
 
-def make_images_and_video():
-    # V2 - BRIGHT BACKGROUND + BIG TEXT
-    scenes = [
-        "FREE FIRE KA JANM - 2017",
-        "AJJU BHAI AUR AMIT BHAI",
-        "500MB KA JADU",
-        "BAN KA KALA DIN - 2022",
-        "WAPSI - FREE FIRE INDIA"
+def download_gaming_visuals():
+    urls = [
+        "https://picsum.photos/seed/ff1/1280/720",
+        "https://picsum.photos/seed/ff2/1280/720",
+        "https://picsum.photos/seed/ff3/1280/720",
+        "https://picsum.photos/seed/ff4/1280/720",
+        "https://picsum.photos/seed/ff5/1280/720"
     ]
-    colors = [(220,20,60), (30,144,255), (255,140,0), (50,50,50), (0,150,0)]
-    
-    # Make 5 images
-    for i, (title, color) in enumerate(zip(scenes, colors)):
-        img = Image.new('RGB', (1280, 720), color)
-        draw = ImageDraw.Draw(img)
-        # Big white box for text
-        draw.rectangle([(0, 500), (1280, 720)], fill=(0,0,0))
-        draw.text((50, 520), title, fill=(255,255,0), font=ImageFont.load_default(), stroke_width=2)
-        draw.text((50, 600), "GameVault - Narnaul Haryana", fill=(255,255,255), font=ImageFont.load_default())
-        # Make text bigger by scaling
-        img = img.resize((1280,720))
-        img.save(f"scene_{i}.jpg")
-        print(f"Made {title}")
+    for i, url in enumerate(urls):
+        try:
+            r = requests.get(url, timeout=20)
+            open(f"scene_{i}.jpg","wb").write(r.content)
+            print(f"Downloaded visual {i}")
+        except:
+            Image.new('RGB',(1280,720),(i*40,100,200)).save(f"scene_{i}.jpg")
 
-    # Make video slideshow from 5 images + voice
-    # Create concat file
-    with open("list.txt", "w") as f:
-        for i in range(5):
-            f.write(f"file 'scene_{i}.jpg'\nduration 8\n")
-        f.write(f"file 'scene_{4}.jpg'\n") # last needs repeat
-
-    cmd = "ffmpeg -y -f concat -safe 0 -i list.txt -i gamevault_final.mp3 -c:v libx264 -c:a aac -pix_fmt yuv420p -shortest final_video.mp4"
-    subprocess.run(cmd, shell=True)
-    print("FINAL VIDEO V2 READY - 5 scenes, bright colors!")
+def make_video_with_animation():
+    cmd = """ffmpeg -y -loop 1 -t 8 -i scene_0.jpg -loop 1 -t 8 -i scene_1.jpg -loop 1 -t 8 -i scene_2.jpg -loop 1 -t 8 -i scene_3.jpg -loop 1 -t 8 -i scene_4.jpg -i gamevault_final.mp3 -filter_complex "[0:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(pzoom+0.0015,1.5)':s=1280x720:d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[v0]; [1:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(pzoom+0.0015,1.5)':s=1280x720:d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[v1]; [2:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(pzoom+0.0015,1.5)':s=1280x720:d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[v2]; [3:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(pzoom+0.0015,1.5)':s=1280x720:d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[v3]; [4:v]scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(pzoom+0.0015,1.5)':s=1280x720:d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[v4]; [v0][v1][v2][v3][v4]concat=n=5:v=1:a=0[v]" -map "[v]" -map 5:a -c:v libx264 -c:a aac -pix_fmt yuv420p -shortest final_video.mp4"""
+    subprocess.run(cmd, shell=True, executable='/bin/bash')
+    print("ANIMATED VIDEO READY!")
 
 if __name__ == "__main__":
     s = make_final_script()
-    print(f"Words: {len(s.split())} - No Bhag spoken!")
     make_voiceover(s)
-    make_images_and_video()
+    download_gaming_visuals()
+    make_video_with_animation()
