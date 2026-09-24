@@ -1,28 +1,24 @@
-# GameVault FINAL Auto-Agent - 15-20 min Hinglish, No Visuals Needed
+# GameVault FINAL Auto-Agent - Pure Hindi Documentary
 import os
 from voice import make_voiceover
 
 def make_2800_word_script(topic):
     base = f"""
-Doston! Swagat hai GameVault par! Aaj hum baat karenge {topic} ke baare mein.
+दोस्तों! गेमवॉल्ट पर आपका स्वागत है! आज हम बात करेंगे {topic} के बारे में।
 
-Part 1 - Introduction: Dekho bhai, Indian gaming mein {topic} ne bawaal macha diya hai. Jab sab soch rahe the ki gaming sirf bade phones par chalega, tab is game ne sabko galat sabit kiya.
+भाग एक - शुरुआत: देखो भाई, भारतीय गेमिंग में {topic} ने धमाल मचा दिया है। जब सब सोच रहे थे कि गेमिंग सिर्फ बड़े फोन पर होगी, तब इस गेम ने सब बदल दिया।
 
-Part 2 - Real Story: Iski kahani shuru hoti hai ek chhote se idea se. Developers ne socha - India ke Tier 2, Tier 3 cities ke ladke jinke paas 2GB RAM wala phone hai, woh bhi khelein. Isiliye game ko halka banaya. PUBG 2GB ka tha, ye sirf 500MB!
+भाग दो - असली कहानी: इसकी कहानी शुरू होती है एक छोटे से आइडिया से। डेवलपर्स ने सोचा, भारत के छोटे शहरों के लड़के, जिनके पास कम स्टोरेज वाला फोन है, उनके लिए एक गेम बनाते हैं।
 
-Part 3 - Paisa aur Fame: Isne 1000 crore kamaye. Total Gaming, Desi Gamers jaise creators ne ispar video banake monthly lakhs kamaye. Har mahine 50 million Indians khelte hain.
+भाग तीन - पैसा और फेम: इस गेम ने हजार करोड़ कमाए। टोटल गेमिंग और देसी गेमर्स जैसे बड़े क्रिएटर्स ने इस पर वीडियो बनाकर हर महीने लाखों कमाए।
 
-Part 4 - Controversy: Ban bhi hua, parents ne bola addiction hai. Lekin gamers ne defend kiya - bola yeh toh skill hai.
+भाग चार - विवाद: ये गेम बैन भी हुआ, माता-पिता ने कहा ये लत है। लेकिन गेमर्स ने कहा, ये तो स्किल है, ये तो हमारा जुनून है।
 
-Conclusion: Toh aapko kya lagta hai {topic} ke baare mein? Comment karo! Aur GameVault ko subscribe karo!
+निष्कर्ष: तो आपको क्या लगता है {topic} के बारे में? कमेंट करो! और गेमवॉल्ट को सब्सक्राइब करो!
 """
-    return (base * 7)[:13000]
+    return base * 4
 
 if __name__ == "__main__":
-    with open("topics.txt") as f:
-        topic = f.readline().strip()
-    print(f"Topic: {topic}")
+    topic = "फ्री फायर"
     script = make_2800_word_script(topic)
-    print(f"Script ready: {len(script)} chars ~ 18 mins")
-    make_voiceover(script, "gamevault_final.mp3")
-    print("18-min Hinglish audio DONE! Ready to attach auto-visuals")
+    make_voiceover(script)
