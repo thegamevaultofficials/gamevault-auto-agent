@@ -17,3 +17,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run GameVault Factory
         run: python main.py
+      - name: Save Audio
+        uses: actions/upload-artifact@v4
+        with:
+          name: gamevault-audio
+          path: gamevault_final.mp3
