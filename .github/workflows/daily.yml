@@ -21,4 +21,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gamevault-audio
-          path: gamevault_final.mp3
+          path: "**/*.mp3"
