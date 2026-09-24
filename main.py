@@ -1,6 +1,6 @@
 import os, subprocess
 from voice import make_voiceover
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 def make_final_script():
     return """दोस्तों गेमवॉल्ट पर आपका स्वागत है। आज की इस धमाकेदार वीडियो में हम बात करने वाले हैं फ्री फायर की पूरी सच्ची कहानी के बारे में।
@@ -15,20 +15,42 @@ def make_final_script():
 तो दोस्तों ये थी फ्री फायर की पूरी कहानी। गेमवॉल्ट चैनल को सब्सक्राइब करना मत भूलना। जय हिंद जय भारत।""".strip()
 
 def make_images_and_video():
-    # Make 1 image for video background
-    img = Image.new('RGB', (1280, 720), (18,18,18))
-    d = ImageDraw.Draw(img)
-    d.rectangle([(40,40),(1240,680)], outline=(255,200,0), width=6)
-    d.text((80,300), "GameVault - Free Fire Story", fill=(255,255,255))
-    d.text((80,380), "Auto Agent Video", fill=(255,200,0))
-    img.save("bg.jpg")
-    # Use ffmpeg to make video from image + audio (no moviepy needed)
-    cmd = 'ffmpeg -y -loop 1 -i bg.jpg -i gamevault_final.mp3 -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -shortest final_video.mp4'
+    # V2 - BRIGHT BACKGROUND + BIG TEXT
+    scenes = [
+        "FREE FIRE KA JANM - 2017",
+        "AJJU BHAI AUR AMIT BHAI",
+        "500MB KA JADU",
+        "BAN KA KALA DIN - 2022",
+        "WAPSI - FREE FIRE INDIA"
+    ]
+    colors = [(220,20,60), (30,144,255), (255,140,0), (50,50,50), (0,150,0)]
+    
+    # Make 5 images
+    for i, (title, color) in enumerate(zip(scenes, colors)):
+        img = Image.new('RGB', (1280, 720), color)
+        draw = ImageDraw.Draw(img)
+        # Big white box for text
+        draw.rectangle([(0, 500), (1280, 720)], fill=(0,0,0))
+        draw.text((50, 520), title, fill=(255,255,0), font=ImageFont.load_default(), stroke_width=2)
+        draw.text((50, 600), "GameVault - Narnaul Haryana", fill=(255,255,255), font=ImageFont.load_default())
+        # Make text bigger by scaling
+        img = img.resize((1280,720))
+        img.save(f"scene_{i}.jpg")
+        print(f"Made {title}")
+
+    # Make video slideshow from 5 images + voice
+    # Create concat file
+    with open("list.txt", "w") as f:
+        for i in range(5):
+            f.write(f"file 'scene_{i}.jpg'\nduration 8\n")
+        f.write(f"file 'scene_{4}.jpg'\n") # last needs repeat
+
+    cmd = "ffmpeg -y -f concat -safe 0 -i list.txt -i gamevault_final.mp3 -c:v libx264 -c:a aac -pix_fmt yuv420p -shortest final_video.mp4"
     subprocess.run(cmd, shell=True)
-    print("FINAL VIDEO READY - No Bhag spoken!")
+    print("FINAL VIDEO V2 READY - 5 scenes, bright colors!")
 
 if __name__ == "__main__":
     s = make_final_script()
-    print(f"Words: {len(s.split())}")
+    print(f"Words: {len(s.split())} - No Bhag spoken!")
     make_voiceover(s)
     make_images_and_video()
