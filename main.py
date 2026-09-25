@@ -69,7 +69,7 @@ with open("title.txt","w", encoding="utf-8") as f:
 
 print(f"Topic: {topic}")
 # 2. VOICE - Edge-TTS
-make_voiceover(script, "voice.mp3")
+make_voiceover(script)
 audio = AudioFileClip("voice.mp3")
 
 # Pexels logic - SAME as your V2 (unchanged)
