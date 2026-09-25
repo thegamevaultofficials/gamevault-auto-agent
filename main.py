@@ -1,4 +1,9 @@
 import os, requests, random
+import PIL.Image
+# Fix for Pillow 9/10 compatibility
+if not hasattr(PIL.Image, 'ANTIALIAS'):
+    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+
 from moviepy.editor import *
 from gtts import gTTS
 
