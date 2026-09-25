@@ -22,8 +22,7 @@ print("Generating voice...")
 tts = gTTS(text=script_text, lang='hi', slow=False)
 tts.save("voice.mp3")
 audio = AudioFileClip("voice.mp3")
-audio = audio.fx(afx.audio_normalize).fx(afx.audio_fadeout, 0.5)
-audio = audio.fx(vfx.speedx, 1.28) # <-- FAST VOICE FIX (1.28x)
+audio = audio.fx(vfx.speedx, 1.28)
 print(f"Voice duration: {audio.duration}")
 
 # 3. CLIPS - High energy gameplay search
