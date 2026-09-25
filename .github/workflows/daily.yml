@@ -11,19 +11,16 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - run: pip install -r requirements.txt
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install deps
+        run: pip install -r requirements.txt
       - name: Run Agent
         env:
           PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
         run: python main.py
-      - uses: actions/upload-artifact@v4
+      - name: Upload
+        uses: actions/upload-artifact@v4
         with:
           name: gamevault-final
-          path: final_video
-          
-          
-          
-          
-          
-          .mp4
+          path: final_video.mp4
