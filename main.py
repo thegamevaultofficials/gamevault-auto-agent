@@ -58,6 +58,12 @@ for term in search_terms:
             break
     if len(video_clips) >= 15:
         break
+# BACKUP IF PEXELS FAILS - So build never fails
+if len(video_clips) == 0:
+    print("Pexels returned 0 videos - using backup colored clips")
+    for i in range(10):
+        clip = ColorClip((1280,720), color=(random.randint(0,255), random.randint(0,255), random.randint(0,255)), duration=2)
+        video_clips.append(clip)
 
 # 4. BUILD TIMELINE - Repeat clips to match audio
 final_clips = []
