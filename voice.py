@@ -1,23 +1,38 @@
+import os
 import asyncio
 import edge_tts
 
 def make_voiceover(text, output_path="voice.mp3"):
-    # Clean text - remove too long
-    text = text.strip()[:1000]
+    text = text.strip().replace("\n", " ")[:1500]
+    if not text:
+        text = "Hello gamers, welcome to Game Vault."
     
-    async def _speak():
-        # hi-IN-MadhurNeural = Best Hinglish male voice
-        communicate = edge_tts.Communicate(text, "hi-IN-MadhurNeural")
-        await communicate.save(output_path)
+    # Clean old file
+    if os.path.exists(output_path):
+        os.remove(output_path)
     
+    async def _edge():
+        comm = edge_tts.Communicate(text, "hi-IN-MadhurNeural")
+        await comm.save(output_path)
+    
+    # Try Edge-TTS 2 times
+    for i in range(2):
+        try:
+            asyncio.run(_edge())
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 5000:
+                print(f"Voice done with Edge-TTS, size: {os.path.getsize(output_path)}")
+                return
+        except Exception as e:
+            print(f"Edge attempt {i+1} failed: {e}")
+    
+    # FALLBACK to gTTS if Edge fails
+    print("Trying gTTS fallback...")
     try:
-        asyncio.run(_speak())
-        print(f"Voice done: {output_path}")
+        from gtts import gTTS
+        tts = gTTS(text=text, lang='hi', slow=False)
+        tts.save(output_path)
+        print(f"Voice done with gTTS fallback")
+        return
     except Exception as e:
-        print(f"Voice error: {e}")
-        # fallback try again
-        asyncio.run(_speak())
-
-# For compatibility with your old main.py that calls with 1 arg
-# This also works: make_voiceover(script, "voice.mp3")
-# And this also works: make_voiceover(script)
+        print(f"gTTS also failed: {e}")
+        raise Exception("Both TTS failed")
