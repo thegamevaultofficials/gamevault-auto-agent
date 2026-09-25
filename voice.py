@@ -1,19 +1,23 @@
-import edge_tts
 import asyncio
+import edge_tts
 
-async def _make(text, file="gamevault_final.mp3"):
-    communicate = edge_tts.Communicate(
-        text=text,
-        voice="hi-IN-MadhurNeural",
-        rate="+15%",
-        pitch="+2Hz"
-    )
-    await communicate.save(file)
+def make_voiceover(text, output_path="voice.mp3"):
+    # Clean text - remove too long
+    text = text.strip()[:1000]
+    
+    async def _speak():
+        # hi-IN-MadhurNeural = Best Hinglish male voice
+        communicate = edge_tts.Communicate(text, "hi-IN-MadhurNeural")
+        await communicate.save(output_path)
+    
+    try:
+        asyncio.run(_speak())
+        print(f"Voice done: {output_path}")
+    except Exception as e:
+        print(f"Voice error: {e}")
+        # fallback try again
+        asyncio.run(_speak())
 
-def make_voiceover(text):
-    text = text.replace("500MB", "पाँच सौ एमबी")
-    text = text.replace("MB", "एमबी")
-    text = text.replace("GB", "जीबी")
-    text = text.replace("Free Fire", "फ्री फायर")
-    asyncio.run(_make(text))
-    print("Voice done")
+# For compatibility with your old main.py that calls with 1 arg
+# This also works: make_voiceover(script, "voice.mp3")
+# And this also works: make_voiceover(script)
