@@ -16,11 +16,11 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
       - name: Run Agent
+        env:
+          PEXELS_KEY: ${{ secrets.PEXELS_KEY }}
         run: python main.py
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: gamevault-final
-          path: |
-            final_video.mp4
-            gamevault_final.mp3
+          path: final_video.mp4
