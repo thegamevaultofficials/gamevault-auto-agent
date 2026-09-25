@@ -1,86 +1,95 @@
 import os, requests, random
-from groq import Groq
 from gtts import gTTS
 from moviepy.editor import *
-from moviepy.video.tools.subtitles import SubtitlesClip
 
-PEXELS_KEY = os.getenv("PEXELS_API_KEY") or os.getenv("PEXELS_KEY")
+PEXELS_KEY = os.getenv("PEXELS_API_KEY") or os.getenv("PEXELS_KEY") or os.getenv("PEXELS_API")
 GROQ_KEY = os.getenv("GROQ_API_KEY")
 
+BACKUP_SCRIPTS = [
+    "Did you know GTA 5 cost 265 million dollars to make? That's more than most Hollywood movies! It made that back in just 3 days!",
+    "Minecraft's world is literally infinite. It would take you 82 years to walk to the end if you never stopped. And there are still secrets no one found!",
+    "In PUBG, the pan can actually block bullets. It's the most OP item in the game and pros always keep it!",
+    "Free Fire was made in just 8 months but made over 1 billion dollars. The fastest billion dollar game ever made!"
+]
+
 def get_script():
-    client = Groq(api_key=GROQ_KEY)
-    prompt = "Write a 30 second viral gaming fact script, 80 words max, hook first. No intro like 'hey guys'. Just fact. Example: GTA 5... Single paragraph only."
-    res = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role":"user","content":prompt}],
-        max_tokens=200
-    )
-    text = res.choices[0].message.content.strip()
-    print(f"SCRIPT: {text}")
-    return text
+    try:
+        from groq import Groq
+        client = Groq(api_key=GROQ_KEY)
+        res = client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=[{"role":"user","content":"Write a 25 second viral gaming fact, 70 words max, start with a hook, no intro. Just fact."}],
+            max_tokens=150
+        )
+        text = res.choices[0].message.content.strip()
+        print(f"GROQ SCRIPT: {text}")
+        if len(text) > 20:
+            return text
+    except Exception as e:
+        print(f"Groq failed: {e}, using backup")
+    return random.choice(BACKUP_SCRIPTS)
 
 def make_voice(text):
     tts = gTTS(text=text, lang='en', tld='com')
     tts.save("voice.mp3")
-    print("Voice saved")
+    print("voice.mp3 created")
 
-def download_pexels(query="gaming"):
-    headers = {"Authorization": PEXELS_KEY}
-    url = f"https://api.pexels.com/videos/search?query={query}&per_page=3&orientation=landscape"
-    r = requests.get(url, headers=headers, timeout=20)
-    data = r.json()
-    files = []
-    for i, v in enumerate(data.get("videos",[])[:3]):
-        video_url = v["video_files"][0]["link"]
-        path = f"clip{i}.mp4"
-        with open(path,"wb") as f:
-            f.write(requests.get(video_url, timeout=30).content)
-        files.append(path)
-        print(f"Downloaded {path}")
-    if not files:
-        # fallback: create color clip
-        print("NO PEXELS - using color fallback")
-    return files
+def download_pexels():
+    try:
+        headers = {"Authorization": PEXELS_KEY}
+        url = "https://api.pexels.com/videos/search?query=gaming+gameplay&per_page=3&orientation=landscape"
+        r = requests.get(url, headers=headers, timeout=15)
+        clips = []
+        for i, v in enumerate(r.json().get("videos", [])[:2]):
+            link = v["video_files"][0]["link"]
+            path = f"clip{i}.mp4"
+            with open(path, "wb") as f:
+                f.write(requests.get(link, timeout=20).content)
+            clips.append(path)
+        print(f"Got {len(clips)} clips")
+        return clips
+    except Exception as e:
+        print(f"Pexels failed: {e}")
+        return []
 
 def make_video():
     text = get_script()
     make_voice(text)
 
-    # Save title/desc
     with open("title.txt","w",encoding="utf-8") as f:
-        f.write(text[:90] + " | Gaming Facts")
+        f.write(text[:80] + " #shorts")
     with open("description.txt","w",encoding="utf-8") as f:
-        f.write(text + "\n\n#gaming #facts #gta #shorts")
-
-    clips_files = download_pexels("video game")
+        f.write(text + "\n\n#gaming #shorts #facts #gta #freefire #pubg")
 
     audio = AudioFileClip("voice.mp3")
-    duration = audio.duration
+    dur = audio.duration
+    print(f"Audio duration: {dur}")
 
-    if clips_files:
-        video_clips = []
-        for cf in clips_files:
+    clip_files = download_pexels()
+
+    if clip_files:
+        vclips = []
+        for cf in clip_files:
             try:
                 c = VideoFileClip(cf).without_audio().resize(height=720)
-                c = c.subclip(0, min(c.duration, duration/len(clips_files)+1))
-                video_clips.append(c)
-            except Exception as e:
-                print(f"Clip error {e}")
-        if video_clips:
-            final_visual = concatenate_videoclips(video_clips).subclip(0, duration)
+                vclips.append(c)
+            except:
+                pass
+        if vclips:
+            visual = concatenate_videoclips(vclips).set_duration(dur).resize((1280,720))
         else:
-            final_visual = ColorClip(size=(1280,720), color=(15,15,15), duration=duration)
+            visual = ColorClip(size=(1280,720), color=(10,10,25), duration=dur)
     else:
-        final_visual = ColorClip(size=(1280,720), color=(15,15,15), duration=duration)
+        visual = ColorClip(size=(1280,720), color=(10,10,25), duration=dur)
 
-    final_visual = final_visual.set_audio(audio)
+    visual = visual.set_audio(audio)
 
-    # Add text overlay
-    txt = TextClip(text, fontsize=50, color='white', method='caption', size=(1000,None), stroke_color='black', stroke_width=2).set_duration(duration).set_position('center')
-    final = CompositeVideoClip([final_visual, txt])
+    # Big viral caption
+    txt = TextClip(text, fontsize=42, color='white', method='caption', size=(1100, None), stroke_color='black', stroke_width=3, font='Arial-Bold').set_duration(dur).set_position('center')
 
+    final = CompositeVideoClip([visual, txt])
     final.write_videofile("final_video.mp4", fps=24, codec="libx264", audio_codec="aac")
-    print("final_video.mp4 DONE")
+    print("FINAL VIDEO DONE")
 
 if __name__ == "__main__":
     make_video()
