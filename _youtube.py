@@ -1,31 +1,61 @@
 import os
-from google.oauth2.credentials import Credentials
+import pickle
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 
-CLIENT_ID = os.getenv("YT_CLIENT_ID")
-CLIENT_SECRET = os.getenv("YT_CLIENT_SECRET")
-REFRESH_TOKEN = os.getenv("YT_REFRESH_TOKEN")
-PRIVACY = os.getenv("YT_PRIVACY_STATUS", "private") # change to public later
+VIDEO_FILE = "final_video.mp4"
+TITLE_FILE = "title.txt"
+DESC_FILE = "description.txt"
 
-creds = Credentials(None, refresh_token=REFRESH_TOKEN, client_id=CLIENT_ID, client_secret=CLIENT_SECRET, token_uri="https://oauth2.googleapis.com/token")
-youtube = build("youtube", "v3", credentials=creds)
+def get_youtube_service():
+    client_id = os.environ["YT_CLIENT_ID"]
+    client_secret = os.environ["YT_CLIENT_SECRET"]
+    refresh_token = os.environ["YT_REFRESH_TOKEN"]
+    
+    creds = Credentials(
+        None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=["https://www.googleapis.com/auth/youtube.upload"]
+    )
+    creds.refresh(Request())
+    return build("youtube", "v3", credentials=creds)
 
-with open("title.txt","r", encoding="utf-8") as f:
-    title = f.read().strip()[:95]
+def upload_video():
+    youtube = get_youtube_service()
+    
+    with open(TITLE_FILE, "r", encoding="utf-8") as f:
+        title = f.read().strip()[:95]
+    try:
+        with open(DESC_FILE, "r", encoding="utf-8") as f:
+            description = f.read().strip()[:4000]
+    except:
+        description = title
 
-request = youtube.videos().insert(
-    part="snippet,status",
-    body={
-        "snippet": {"title": title, "description": f"{title}\n\n#gaming #gta5 #bgmi", "categoryId": "20"},
-        "status": {"privacyStatus": PRIVACY, "selfDeclaredMadeForKids": False}
-    },
-    media_body=MediaFileUpload("final_video.mp4", chunksize=-1, resumable=True)
-)
-res = request.execute()
-print(f"Uploaded video ID: {res['id']}")
+    privacy = os.getenv("YT_PRIVACY_STATUS", "private")
 
-# thumbnail
-if os.path.exists("thumbnail.png"):
-    youtube.thumbnails().set(videoId=res['id'], media_body=MediaFileUpload("thumbnail.png", mimetype="image/png")).execute()
-    print("Thumbnail uploaded")
+    request = youtube.videos().insert(
+        part="snippet,status",
+        body={
+            "snippet": {
+                "title": title,
+                "description": description,
+                "categoryId": "20",
+                "tags": ["gaming", "gamevault", "mobile gaming"]
+            },
+            "status": {
+                "privacyStatus": privacy,
+                "selfDeclaredMadeForKids": False
+            }
+        },
+        media_body=VIDEO_FILE
+    )
+    response = request.execute()
+    print(f"Uploaded! Video ID: {response['id']} https://youtu.be/{response['id']}")
+
+if __name__ == "__main__":
+    upload_video()
