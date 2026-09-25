@@ -1,94 +1,79 @@
-import os, requests, asyncio
-import PIL.Image
-if not hasattr(PIL.Image, 'ANTIALIAS'):
-    PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
+import os
+import random
+import requests
 from moviepy.editor import *
-import edge_tts
+import moviepy.video.fx as vfx
+import moviepy.audio.fx as afx
+from gtts import gTTS
 
-PEXELS_KEY = os.getenv("PEXELS_KEY")
+# === CONFIG ===
+PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+TOPIC = "Why you can't stop gaming at 2AM"
 
-SCRIPT = """
-सोचो, रात के दो बज रहे हैं। बाहर सन्नाटा है। तुम्हारी आँखें जल रही हैं,
-तुमने शाम से कुछ नहीं खाया, तुम्हारी माँ तीन बार तुम्हें बुला चुकी है।
-लेकिन तुम कंट्रोलर नहीं छोड़ सकते। क्यों? क्योंकि तुम्हें लगता है, बस एक और मिशन।
-लेकिन सच कुछ और है। ये गेम तुम्हें खेल रहा है।
+# 1. SCRIPT - Fast, punchy Hindi (no slow lines)
+script_text = """रात के दो बज रहे हैं। बाहर सन्नाटा है।
+तुम्हारी आँखें जल रही हैं। पर तुम रुक नहीं रहे।
+क्यों? क्योंकि ये सिर्फ गेम नहीं है।
+ये dopamine का जाल है। हर win पर तुम्हारा दिमाग कहता है - एक और मैच।
+और तुम फँस जाते हो। Game तुम्हें नहीं, तुम Game को खेल रहे हो।"""
 
-नमस्कार, आप देख रहे हैं गेम वॉल्ट, और आज हम खोलने जा रहे हैं वीडियो गेम्स का सबसे बड़ा काला सच।
-
-क्या आपने सोचा है, फ्री गेम्स फ्री क्यों हैं? दुनिया में पानी की बोतल भी फ्री नहीं, तो पाँच सौ करोड़ का गेम फ्री कैसे?
-जवाब है लत। दो हजार पाँच में बड़ी कंपनियों ने कैसीनो के साइकोलॉजिस्ट हायर किए। वही लोग जो जुए की मशीन बनाते हैं।
-जब आप किल करते हैं, जो चमक और आवाज आती है, वो कैसीनो के सिक्के जैसी है, ताकि आपका दिमाग खुश हो और आप और खेलो।
-
-दूसरा धोखा है ग्राफिक्स। आपको लगता है ग्राफिक्स मजे के लिए बेहतर हो रहे हैं? नहीं।
-ग्राफिक्स बेहतर हो रहे हैं ताकि असली जिंदगी बदसूरत लगे। गेम में सूरज परफेक्ट है, असल में गर्मी और ट्रैफिक।
-इसे कहते हैं विजुअल ट्रैप।
-
-हर गेम का हीरो अकेला लड़का क्यों होता है? जिसे दुनिया नहीं समझती। क्योंकि ये आपकी कहानी है।
-आप गेम में अपनी अधूरी जिंदगी पूरी करते हैं।
-
-अब सबसे खतरनाक सच, फ्री टू प्ले। एक आम गेमर अपनी जिंदगी में फ्री गेम पर अस्सी हजार से ज्यादा खर्च करता है।
-एक स्किन दो हजार, एक गन पाँच हजार, बैटल पास ग्यारह सौ। बच्चा बटन दबाता है, पापा का पैसा कटता है।
-कंपनियां इसे माइक्रोट्रांजैक्शन कहती हैं, मैं इसे डिजिटल जुआ कहता हूँ।
-
-और ई-स्पोर्ट्स? सोलह साल के बच्चे चौदह घंटे प्रैक्टिस करते हैं। बाईस साल में करियर खत्म, हाथ काँपते हैं, आँखें खराब।
-कॉन्ट्रैक्ट ऐसा कि छोड़ नहीं सकते। ये स्पोर्ट है या गुलामी?
-
-और अब भविष्य, आर्टिफिशियल इंटेलिजेंस। अगले दो साल में गेम आपको पढ़ेगा।
-आप कब बोर हो, कब गुस्सा हो, कब पैसे खर्च करने को तैयार हो। गेम खुद को बदल देगा ताकि आप एग्जिट बटन कभी ना दबाओ।
-
-तो सवाल है, क्या आप गेमर हैं? या आप प्रोडक्ट हैं? आपका समय, आपका ध्यान, यही उनका पैसा है।
-अगर इसने आपको सोचने पर मजबूर किया, तो इसे उस दोस्त को भेजो जो रात भर खेलता है।
-आप देख रहे थे गेम वॉल्ट।
-"""
-
-async def make_voice():
-    try:
-        print("Trying MALE MadhurNeural...")
-        comm = edge_tts.Communicate(SCRIPT, "hi-IN-MadhurNeural", rate="-5%", pitch="+0Hz", volume="+20%")
-        await comm.save("voice.mp3")
-        print("MALE voice OK")
-    except Exception as e:
-        print(f"Edge blocked {e}, using natural fallback")
-        from gtts import gTTS
-        gTTS(text=SCRIPT, lang='hi', slow=False).save("voice_raw.mp3")
-        a = AudioFileClip("voice_raw.mp3")
-        a = a.fx(vfx.speedx, 0.88) # slower = more natural, less robotic
-        a.write_audiofile("voice.mp3")
-
-asyncio.run(make_voice())
+# 2. VOICE - Fast natural Hindi
+print("Generating voice...")
+tts = gTTS(text=script_text, lang='hi', slow=False)
+tts.save("voice.mp3")
 audio = AudioFileClip("voice.mp3")
-print(f"Duration {audio.duration/60:.1f} mins")
+audio = audio.fx(afx.audio_normalize).fx(afx.audio_fadeout, 0.5)
+audio = audio.fx(vfx.speedx, 1.28) # <-- FAST VOICE FIX (1.28x)
+print(f"Voice duration: {audio.duration}")
 
-def dl(q,n):
-    headers={"Authorization":PEXELS_KEY}
-    url=f"https://api.pexels.com/videos/search?query={q}&per_page=12&orientation=landscape"
-    files=[]
-    try:
-        j=requests.get(url,headers=headers,timeout=20).json()
-        for v in j.get("videos",[])[:n]:
-            link=v["video_files"][0]["link"]
-            fn=f"{q[:3]}_{len(files)}.mp4"
-            open(fn,'wb').write(requests.get(link,timeout=30).content)
-            files.append(fn)
-    except: pass
-    return files
+# 3. CLIPS - High energy gameplay search
+search_terms = [
+    "valorant gameplay",
+    "fortnite montage",
+    "gta 5 gameplay",
+    "cyberpunk neon city",
+    "esports crowd",
+    "rgb gaming keyboard fast"
+]
 
-allf=[]
-for q in ["gaming dark room","video game controller","esports tournament","robot ai future","money credit card"]:
-    allf.extend(dl(q,5))
+headers = {"Authorization": PEXELS_API_KEY}
+video_clips = []
 
-clips=[]
-total=0
-idx=0
-while total < audio.duration and allf:
-    f=allf[idx % len(allf)]
-    try:
-        c=VideoFileClip(f).without_audio().resize((1280,720))
-        dur=min(4, c.duration, audio.duration-total)
-        clips.append(c.subclip(0,dur))
-        total+=dur
-    except: pass
-    idx+=1
+for term in search_terms:
+    print(f"Searching: {term}")
+    url = f"https://api.pexels.com/videos/search?query={term}&per_page=3&orientation=landscape"
+    r = requests.get(url, headers=headers).json()
+    for v in r.get('videos', []):
+        # Get 720p link
+        link = [f for f in v['video_files'] if f['width']==1280][0]['link']
+        clip_path = f"clip_{len(video_clips)}.mp4"
+        open(clip_path, 'wb').write(requests.get(link).content)
 
-final=concatenate_videoclips(clips,method="compose").set_audio(audio)
-final.write_videofile("final_video.mp4",fps=24,codec='libx264',audio_codec='aac',bitrate="1000k",preset='ultrafast')
+        # FAST CUT + ZOOM EFFECT
+        clip = VideoFileClip(clip_path).subclip(0, 1.8) # Only 1.8 sec = not boring
+        clip = clip.resize(height=720)
+        # Zoom in effect
+        clip = clip.fx(vfx.resize, lambda t: 1 + 0.15*t)
+        clip = clip.set_position('center').on_color(size=(1280,720), color=(0,0,0))
+        video_clips.append(clip)
+        if len(video_clips) >= 15:
+            break
+    if len(video_clips) >= 15:
+        break
+
+# 4. BUILD TIMELINE - Repeat clips to match audio
+final_clips = []
+current_time = 0
+while current_time < audio.duration:
+    c = random.choice(video_clips)
+    final_clips.append(c.set_start(current_time))
+    current_time += c.duration
+
+final = CompositeVideoClip(final_clips, size=(1280,720))
+final = final.set_duration(audio.duration)
+final = final.set_audio(audio)
+
+# 5. EXPORT - Compressed 30MB
+print("Exporting final_video.mp4...")
+final.write_videofile("final_video.mp4", fps=24, codec='libx264', audio_codec='aac', bitrate="1000k", preset='ultrafast')
+print("DONE - final_video.mp4 ready")
