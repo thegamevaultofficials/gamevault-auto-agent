@@ -49,7 +49,7 @@ video_clips = []
 headers = {"Authorization": PEXELS_API_KEY} if PEXELS_API_KEY else {}
 
 try:
-    search_query = "gta 5 gameplay"
+search_query = random.choice(["gaming setup rgb", "esports gaming", "video game controller", "gaming pc neon", "cyberpunk city"])
     print(f"Searching Pexels for: {search_query}")
     url = f"https://api.pexels.com/videos/search?query={search_query}&per_page=10&orientation=landscape"
     r = requests.get(url, headers=headers, timeout=20)
