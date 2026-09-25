@@ -38,7 +38,7 @@ def generate_script(topic):
             url = "https://api.groq.com/openai/v1/chat/completions"
             headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
             prompt = f"Write 150 word viral YouTube Shorts script for '{topic}' in Hinglish mix. Hook, 5 points, energetic."
-            data = {"model": "llama-3.3-70b-versatile", "messages": [{"role":"user","content":prompt}]}
+            data = {"model": "llama-3.1-8b-instant", "messages": [{"role":"user","content":prompt}]}
             r = requests.post(url, headers=headers, json=data, timeout=30)
             r.raise_for_status()
             return r.json()['choices'][0]['message']['content']
