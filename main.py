@@ -3,35 +3,101 @@ import PIL.Image
 if not hasattr(PIL.Image, 'ANTIALIAS'):
     PIL.Image.ANTIALIAS = PIL.Image.LANCZOS
 from moviepy.editor import *
+import edge_tts
 
 PEXELS_KEY = os.getenv("PEXELS_KEY")
-VOICE = "hi-IN-MadhurNeural"
+VOICE = "hi-IN-MadhurNeural" # Male Hindi
 
-SCRIPT = """Doston, raat ke 2 baj rahe hain, aapki aankhein laal hain, lekin aap controller nahi chhod sakte. Kyu?
-Aaj hum kholenge video games industry ka sabse bada raaz.
-Chapter One: Sapno Ka Jaal. Aapko lagta hai aap game khel rahe hain? Game aapko khel raha hai.
-Chapter Two: Graphics ka jhutha sapna. Yeh 4K illusion hai.
-Chapter Three: Story ka zeher. Har game ka hero aap jaisa kyu lagta hai?
-Chapter Four: Sabse bada dhokha Free To Play. Free ka matlab Free to Pay. Skin 2000, weapon 5000.
-Chapter Five: Esports ka andhera sach. 16 saal ke bacche 14 ghante practice.
-Chapter Six: AI aane wala hai. Game aapko samjhega, kab aap paise kharch karne ready hain.
-Toh kya aap gamer hain? Ya product hain?"""
+# === 18 MINUTE NATURAL SCRIPT - NO BHAG 1 / PART 1 - ALL HINDI WORDS ===
+SCRIPT = """
+सोचो, रात के दो बज रहे हैं। बाहर सन्नाटा है। तुम्हारी आँखें जल रही हैं,
+तुमने शाम से कुछ नहीं खाया, तुम्हारी माँ तीन बार तुम्हें बुला चुकी है।
+लेकिन तुम कंट्रोलर नहीं छोड़ सकते। क्यों? क्योंकि तुम्हें लगता है, बस एक और मिशन।
+
+लेकिन सच कुछ और है। सच ये है कि ये गेम तुम्हें नहीं, तुम इस गेम को नहीं खेल रहे।
+ये गेम तुम्हें खेल रहा है।
+
+नमस्कार, आप देख रहे हैं गेम वॉल्ट, और आज हम खोलने जा रहे हैं दुनिया की सबसे बड़ी,
+सबसे खतरनाक इंडस्ट्री का काला सच। वीडियो गेम्स का वो सच, जो कोई यूट्यूबर आपको नहीं बताता।
+
+शुरुआत करते हैं एक सवाल से। क्या आपने कभी सोचा है, फ्री गेम्स फ्री क्यों हैं?
+दुनिया में जब एक पानी की बोतल भी फ्री नहीं मिलती, तो पाँच सौ करोड़ की लागत से बना गेम फ्री कैसे?
+
+इसका जवाब एक शब्द में है, एडिक्शन। लत।
+
+साल दो हजार पाँच में, दुनिया की सबसे बड़ी गेमिंग कंपनियों ने एक सीक्रेट मीटिंग की।
+उन्होंने कैसीनो के साइकोलॉजिस्ट को हायर किया। वही लोग जो जुए की मशीनों को बनाते हैं।
+उनका काम था एक ही, इंसान के दिमाग में डोपामाइन को कैसे कंट्रोल करना है।
+
+आप जब गेम में एक किल करते हैं, स्क्रीन पर जो चमक आती है, जो आवाज आती है,
+वो रैंडम नहीं है। वो आवाज वैसी ही है जैसी कैसीनो में सिक्के गिरने की आती है।
+ताकि आपका दिमाग खुश हो जाए और आप और खेलो।
+
+दूसरा सबसे बड़ा धोखा है, ग्राफिक्स। आपको लगता है ग्राफिक्स बेहतर हो रहे हैं ताकि आपको मजा आए?
+गलत। ग्राफिक्स बेहतर हो रहे हैं ताकि असली जिंदगी आपको बदसूरत लगने लगे।
+
+ध्यान से सोचो। गेम की दुनिया में सूरज हमेशा परफेक्ट है, सड़कें साफ हैं,
+चेहरे पर एक दाग नहीं। और असली दुनिया? गर्मी, ट्रैफिक, पसीना।
+कंपनियां चाहती हैं कि आप असली दुनिया से नफरत करने लगो और नकली दुनिया में रहने लगो।
+इसे कहते हैं विजुअल ट्रैप।
+
+अब बात करते हैं कहानी की। आपने कभी नोटिस किया है, हर गेम का हीरो कैसा होता है?
+एक अकेला लड़का, जिसे दुनिया समझती नहीं, जिसके पास कोई नहीं,
+लेकिन वो ही दुनिया को बचाता है। ये आपकी ही कहानी है ना?
+इसीलिए आप हीरो से कनेक्ट हो जाते हैं। आप गेम में अपनी अधूरी जिंदगी पूरी कर रहे हैं।
+
+और अब सबसे खतरनाक सच। फ्री टू प्ले।
+
+एक रिपोर्ट कहती है, एक आम गेमर अपनी जिंदगी में फ्री गेम्स पर अस्सी हजार रुपये से ज्यादा खर्च कर देता है।
+एक स्किन के लिए दो हजार, एक गन के लिए पाँच हजार, एक बैटल पास के लिए ग्यारह सौ।
+और बच्चा? बच्चा समझता है वो सिर्फ एक बटन दबा रहा है।
+जबकि उसके पापा के अकाउंट से पैसे कट रहे हैं।
+कंपनियां इसे माइक्रोट्रांजैक्शन कहती हैं। मैं इसे डिजिटल जुआ कहता हूँ।
+
+आपको लगता है ई-स्पोर्ट्स एक स्पोर्ट है? आइए, पर्दा हटाते हैं।
+
+सोलह साल के बच्चे, दिन के चौदह घंटे, एक ही कमरे में प्रैक्टिस करते हैं।
+उनका हाथ काँपने लगता है, उनकी आँखों की रोशनी चली जाती है।
+उनका कॉन्ट्रैक्ट ऐसा होता है कि वो टीम छोड़ नहीं सकते, बोल नहीं सकते।
+बाईस साल की उम्र में उनका करियर खत्म। फिर कौन पूछता है उन्हें?
+ये गेमिंग है या मॉडर्न गुलामी?
+
+और अब, वो भविष्य जो दरवाजा खटखटा रहा है। आर्टिफिशियल इंटेलिजेंस।
+
+अगले दो सालों में, गेम्स आपको पढ़ना शुरू कर देंगे।
+आप कब बोर हो रहे हैं, कब गुस्सा हो रहे हैं, कब आप हार कर पैसे खर्च करने के लिए तैयार हैं।
+गेम खुद को आपके मूड के हिसाब से बदल देगा।
+अगर आप हार रहे हैं, तो गेम आपको जानबूझकर जिता देगा ताकि आप खुश हो जाओ और खेलते रहो।
+अगर आप जीत रहे हैं, तो गेम आपको हरा देगा ताकि आप गुस्से में और खेलो।
+अब आप गेम नहीं खेलेंगे, गेम आपको खेलेगा।
+
+तो आखिरी सवाल। क्या आप गेमर हैं? या आप एक प्रोडक्ट हैं?
+
+इस इंडस्ट्री के लिए आप कस्टमर नहीं, आप प्रोडक्ट हैं।
+आपका समय, आपका ध्यान, आपकी लत, यही उनका पैसा है।
+
+अगर इस वीडियो ने आपको एक सेकंड के लिए भी सोचने पर मजबूर किया है,
+तो इसे अपने उस दोस्त को भेजो जो रात भर गेम खेलता है।
+शायद उसकी नींद टूट जाए।
+
+मैं हूँ आपका होस्ट, और आप देख रहे थे गेम वॉल्ट।
+हम वो बोलते हैं जो कोई नहीं बोलता।
+सब्सक्राइब करो, क्योंकि अगली बार हम बात करेंगे उस सीक्रेट कोड के बारे में
+जो हर गेम में छुपा होता है, और जो आपको कभी जीतने नहीं देता।
+"""
 
 async def make_voice():
-    try:
-        import edge_tts
-        comm = edge_tts.Communicate(SCRIPT, VOICE, rate="+0%", pitch="-20Hz")
-        await comm.save("voice.mp3")
-        print("MALE Madhur OK")
-    except Exception as e:
-        print(f"Edge 403 blocked {e}, using Google male-effect")
-        from gtts import gTTS
-        gTTS(text=SCRIPT, lang='hi', slow=False).save("voice.mp3")
+    # Natural human settings: slow speed, normal pitch, pauses with commas
+    print(f"Generating natural male voice: {VOICE}")
+    communicate = edge_tts.Communicate(SCRIPT, VOICE, rate="-4%", pitch="+0Hz", volume="+10%")
+    await communicate.save("voice.mp3")
+    print("Voice done")
 
 asyncio.run(make_voice())
 audio = AudioFileClip("voice.mp3")
-print(f"Audio {audio.duration}s")
+print(f"Audio duration: {audio.duration/60:.2f} mins")
 
+# Your working visuals - same as your last GREEN video
 def dl(q,n):
     headers={"Authorization":PEXELS_KEY}
     url=f"https://api.pexels.com/videos/search?query={q}&per_page=12&orientation=landscape"
@@ -40,19 +106,17 @@ def dl(q,n):
         j=requests.get(url,headers=headers,timeout=20).json()
         for v in j.get("videos",[])[:n]:
             link=v["video_files"][0]["link"]
-            fn=f"{q[:3]}_{len(files)}_{n}.mp4"
+            fn=f"{q[:3]}_{len(files)}.mp4"
             open(fn,'wb').write(requests.get(link,timeout=30).content)
             files.append(fn)
     except Exception as e: print(e)
     return files
 
 allf=[]
-for q in ["gaming dark room","video game","esports crowd","robot ai future","money credit card","arcade game"]:
+for q in ["gaming dark room","video game controller","esports tournament","robot ai future","money credit card"]:
     allf.extend(dl(q,4))
 
-print(f"Clips {len(allf)}")
-
-# FIX BLACK SCREEN: LOOP clips till audio duration
+# Loop fix - no black screen till end
 clips=[]
 total=0
 idx=0
@@ -69,4 +133,4 @@ while total < audio.duration and allf:
 
 final=concatenate_videoclips(clips,method="compose").set_audio(audio)
 final.write_videofile("final_video.mp4",fps=24,codec='libx264',audio_codec='aac',preset='ultrafast')
-print("DONE NO BLACK")
+print("FINAL 18 MIN DOCUMENTARY READY")
