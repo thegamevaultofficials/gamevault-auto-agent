@@ -91,4 +91,4 @@ while total < audio.duration and allf:
     idx+=1
 
 final=concatenate_videoclips(clips,method="compose").set_audio(audio)
-final.write_videofile("final_video.mp4",fps=24,codec='libx264',audio_codec='aac',preset='ultrafast')
+final.write_videofile("final_video.mp4",fps=24,codec='libx264',audio_codec='aac',bitrate="1000k",preset='ultrafast')
